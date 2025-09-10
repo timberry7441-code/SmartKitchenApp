@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartKitchen - MVP Demo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2e7d32;
+            --primary-light: #60ad5e;
+            --primary-dark: #005005;
+            --secondary: #ff8f00;
+            --secondary-light: #ffc046;
+            --secondary-dark: #c56000;
+            --text-on-primary: #ffffff;
+            --text-on-secondary: #000000;
+            --background: #f5f5f5;
+            --card-background: #ffffff;
+            --text-primary: #212121;
+            --text-secondary: #757575;
+            --danger: #d32f2f;
+            --success: #388e3c;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--background);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--primary);
+            color: var(--text-on-primary);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            background-color: var(--primary-light);
+            overflow-x: auto;
+        }
+        
+        .nav-tab {
+            padding: 15px 20px;
+            cursor: pointer;
+            white-space: nowrap;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .nav-tab.active {
+            border-bottom: 3px solid var(--secondary);
+            background-color: var(--primary-dark);
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+            animation: fadeIn 0.3s;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .card {
+            background-color: var(--card-background);
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .card-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .appliances-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .appliance-card {
+            background: linear-gradient(145deg, #e6e6e6, #ffffff);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        
+        .appliance-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .appliance-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+        
+        .appliance-status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        
+        .status-on {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .status-off {
+            background-color: var(--text-secondary);
+            color: white;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+            margin-top: 10px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--success);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: var(--text-on-secondary);
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--secondary-dark);
+        }
+        
+        .inventory-list {
+            list-style: none;
+        }
+        
+        .inventory-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .inventory-item:last-child {
+            border-bottom: none;
+        }
+        
+        .item-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .item-action {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .item-delete {
+            color: var(--danger);
+        }
+        
+        .add-item-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .form-input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .recipes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .recipe-card {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .recipe-image {
+            height: 150px;
+            background-color: #ddd;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .recipe-content {
+            padding: 15px;
+        }
+        
+        .recipe-title {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        .recipe-ingredients {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 15px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .recipe-actions {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .cooking-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+        
+        .modal-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+        
+        .cooking-steps {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        
+        .cooking-step {
+            margin-bottom: 10px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .cooking-step:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--secondary);
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #eee;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: var(--secondary);
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        .modal-actions {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 1001;
+        }
+        
+        @media (max-width: 768px) {
+            .appliances-grid, .recipes-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .add-item-form {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <i class="fas fa-utensils"></i>
+            <span>SmartKitchen</span>
+        </div>
+    </header>
+    
+    <div class="nav-tabs">
+        <div class="nav-tab active" data-tab="dashboard">Dashboard</div>
+        <div class="nav-tab" data-tab="inventory">Inventory</div>
+        <div class="nav-tab" data-tab="recipes">Recipes</div>
+        <div class="nav-tab" data-tab="appliances">Appliances</div>
+    </div>
+    
+    <div class="container">
+        <!-- Dashboard Tab -->
+        <div class="tab-content active" id="dashboard">
+            <div class="card">
+                <h2 class="card-title">Welcome to Your Smart Kitchen</h2>
+                <p>Your kitchen is currently running efficiently with 3 appliances active.</p>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">Quick Stats</h2>
+                <div class="appliances-grid">
+                    <div class="appliance-card">
+                        <div class="appliance-icon">
+                            <i class="fas fa-blender"></i>
+                        </div>
+                        <h3>Smart Blender</h3>
+                        <span class="appliance-status status-on">Active</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="appliance-card">
+                        <div class="appliance-icon">
+                            <i class="fas fa-temperature-high"></i>
+                        </div>
+                        <h3>Smart Oven</h3>
+                        <span class="appliance-status status-on">Preheating</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="appliance-card">
+                        <div class="appliance-icon">
+                            <i class="fas fa-ice-cream"></i>
+                        </div>
+                        <h3>Smart Fridge</h3>
+                        <span class="appliance-status status-on">15 Items</span>
+                        <button class="btn btn-primary" style="margin-top: 10px;">View Contents</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">Recommended Recipes</h2>
+                <p>Based on your current inventory, we recommend these recipes:</p>
+                
+                <div class="recipes-grid">
+                    <div class="recipe-card">
+                        <div class="recipe-image" style="background-image: url('https://via.placeholder.com/300/60ad5e/ffffff?text=Avocado+Toast')"></div>
+                        <div class="recipe-content">
+                            <h3 class="recipe-title">Avocado Toast</h3>
+                            <p class="recipe-ingredients">Avocado, Whole grain bread, Cherry tomatoes, Lemon juice, Salt, Pepper</p>
+                            <div class="recipe-actions">
+                                <span>15 min</span>
+                                <button class="btn btn-secondary start-cooking" data-recipe="Avocado Toast">Start Cooking</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="recipe-card">
+                        <div class="recipe-image" style="background-image: url('https://via.placeholder.com/300/ff8f00/ffffff?text=Vegetable+Stir+Fry')"></div>
+                        <div class="recipe-content">
+                            <h3 class="recipe-title">Vegetable Stir Fry</h3>
+                            <p class="recipe-ingredients">Broccoli, Bell peppers, Carrots, Soy sauce, Garlic, Ginger, Olive oil</p>
+                            <div class="recipe-actions">
+                                <span>25 min</span>
+                                <button class="btn btn-secondary start-cooking" data-recipe="Vegetable Stir Fry">Start Cooking</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Inventory Tab -->
+        <div class="tab-content" id="inventory">
+            <div class="card">
+                <h2 class="card-title">Your Kitchen Inventory</h2>
+                <p>Manage the ingredients you have available in your kitchen.</p>
+                
+                <ul class="inventory-list">
+                    <li class="inventory-item">
+                        <span>Avocado (2 pcs)</span>
+                        <div class="item-actions">
+                            <button class="item-action item-delete"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </li>
+                    <li class="inventory-item">
+                        <span>Whole grain bread (1 loaf)</span>
+                        <div class="item-actions">
+                            <button class="item-action item-delete"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </li>
+                    <li class="inventory-item">
+                        <span>Cherry tomatoes (250g)</span>
+                        <div class="item-actions">
+                            <button class="item-action item-delete"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </li>
+                    <li class="inventory-item">
+                        <span>Broccoli (1 head)</span>
+                        <div class="item-actions">
+                            <button class="item-action item-delete"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </li>
+                    <li class="inventory-item">
+                        <span>Bell peppers (3 pcs)</span>
+                        <div class="item-actions">
+                            <button class="item-action item-delete"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </li>
+                    <li class="inventory-item">
+                        <span>Carrots (5 pcs)</span>
+                        <div class="item-actions">
+                            <button class="item-action item-delete"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </li>
+                </ul>
+                
+                <div class="add-item-form">
+                    <input type="text" class="form-input" placeholder="Add new item (e.g., Milk 1L)" id="new-item">
+                    <button class="btn btn-primary" id="add-item">Add</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recipes Tab -->
+        <div class="tab-content" id="recipes">
+            <div class="card">
+                <h2 class="card-title">Smart Recipe Suggestions</h2>
+                <p>These recipes are recommended based on your current inventory and preferences.</p>
+                
+                <div class="recipes-grid">
+                    <div class="recipe-card">
+                        <div class="recipe-image" style="background-image: url('https://via.placeholder.com/300/60ad5e/ffffff?text=Avocado+Toast')"></div>
+                        <div class="recipe-content">
+                            <h3 class="recipe-title">Avocado Toast</h3>
+                            <p class="recipe-ingredients">Avocado, Whole grain bread, Cherry tomatoes, Lemon juice, Salt, Pepper</p>
+                            <div class="recipe-actions">
+                                <span>15 min</span>
+                                <button class="btn btn-secondary start-cooking" data-recipe="Avocado Toast">Start Cooking</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="recipe-card">
+                        <div class="recipe-image" style="background-image: url('https://via.placeholder.com/300/ff8f00/ffffff?text=Vegetable+Stir+Fry')"></div>
+                        <div class="recipe-content">
+                            <h3 class="recipe-title">Vegetable Stir Fry</h3>
+                            <p class="recipe-ingredients">Broccoli, Bell peppers, Carrots, Soy sauce, Garlic, Ginger, Olive oil</p>
+                            <div class="recipe-actions">
+                                <span>25 min</span>
+                                <button class="btn btn-secondary start-cooking" data-recipe="Vegetable Stir Fry">Start Cooking</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="recipe-card">
+                        <div class="recipe-image" style="background-image: url('https://via.placeholder.com/300/2e7d32/ffffff?text=Fresh+Salad')"></div>
+                        <div class="recipe-content">
+                            <h3 class="recipe-title">Fresh Salad</h3>
+                            <p class="recipe-ingredients">Mixed greens, Cherry tomatoes, Cucumber, Olive oil, Lemon juice, Salt</p>
+                            <div class="recipe-actions">
+                                <span>10 min</span>
+                                <button class="btn btn-secondary start-cooking" data-recipe="Fresh Salad">Start Cooking</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Appliances Tab -->
+        <div class="tab-content" id="appliances">
+            <div class="card">
+                <h2 class="card-title">Connected Appliances</h2>
+                <p>Manage and monitor your smart kitchen appliances.</p>
+                
+                <div class="appliances-grid">
+                    <div class="appliance-card">
+                        <div class="appliance-icon">
+                            <i class="fas fa-blender"></i>
+                        </div>
+                        <h3>Smart Blender</h3>
+                        <span class="appliance-status status-on">Active</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="appliance-card">
+                        <div class="appliance-icon">
+                            <i class="fas fa-temperature-high"></i>
+                        </div>
+                        <h3>Smart Oven</h3>
+                        <span class="appliance-status status-on">Preheating to 350°F</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="appliance-card">
+                        <div class="appliance-icon">
+                            <i class="fas fa-ice-cream"></i>
+                        </div>
+                        <h3>Smart Fridge</h3>
+                        <span class="appliance-status status-on">15 Items</span>
+                        <button class="btn btn-primary" style="margin-top: 10px;">View Contents</button>
+                    </div>
+                    
+                    <div class="appliance-card">
+                        <div class="appliance-icon">
+                            <i class="fas fa-fire"></i>
+                        </div>
+                        <h3>Smart Stove</h3>
+                        <span class="appliance-status status-off">Offline</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Cooking Modal -->
+    <div class="cooking-modal" id="cooking-modal">
+        <div class="modal-content">
+            <h2 class="modal-title" id="modal-recipe-name">Cooking: Recipe Name</h2>
+            
+            <div class="cooking-steps">
+                <div class="cooking-step">Preparing ingredients...</div>
+                <div class="cooking-step">Preheating appliances...</div>
+                <div class="cooking-step">Following cooking instructions...</div>
+                <div class="cooking-step">Almost done...</div>
+                <div class="cooking-step">Ready to serve!</div>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress" id="cooking-progress"></div>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn btn-primary" id="pause-cooking">Pause</button>
+                <button class="btn btn-secondary" id="stop-cooking">Stop</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <span id="notification-text">Notification message</span>
+    </div>
+    
+    <script>
+        // Tab navigation
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs and contents
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked tab and corresponding content
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+        
+        // Toggle switches
+        document.querySelectorAll('.toggle-switch input').forEach(toggle => {
+            toggle.addEventListener('change', function() {
+                const status = this.parentElement.previousElementSibling;
+                if (this.checked) {
+                    status.textContent = status.textContent.replace('Offline', 'Active');
+                    status.classList.remove('status-off');
+                    status.classList.add('status-on');
+                    showNotification('Appliance turned on');
+                } else {
+                    status.textContent = status.textContent.replace('Active', 'Offline');
+                    status.classList.remove('status-on');
+                    status.classList.add('status-off');
+                    showNotification('Appliance turned off');
+                }
+            });
+        });
+        
+        // Inventory management
+        document.getElementById('add-item').addEventListener('click', function() {
+            const newItemInput = document.getElementById('new-item');
+            const newItemText = newItemInput.value.trim();
+            
+            if (newItemText) {
+                const inventoryList = document.querySelector('.inventory-list');
+                const newItem = document.createElement('li');
+                newItem.className = 'inventory-item';
+                newItem.innerHTML = `
+                    <span>${newItemText}</span>
+                    <div class="item-actions">
+                        <button class="item-action item-delete"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+                
+                inventoryList.appendChild(newItem);
+                newItemInput.value = '';
+                
+                // Add event listener to the new delete button
+                newItem.querySelector('.item-delete').addEventListener('click', function() {
+                    inventoryList.removeChild(newItem);
+                    showNotification('Item removed from inventory');
+                });
+                
+                showNotification('Item added to inventory');
+            }
+        });
+        
+        // Existing delete buttons
+        document.querySelectorAll('.item-delete').forEach(button => {
+            button.addEventListener('click', function() {
+                const item = this.closest('.inventory-item');
+                item.parentNode.removeChild(item);
+                showNotification('Item removed from inventory');
+            });
+        });
+        
+        // Cooking functionality
+        document.querySelectorAll('.start-cooking').forEach(button => {
+            button.addEventListener('click', function() {
+                const recipeName = this.dataset.recipe;
+                document.getElementById('modal-recipe-name').textContent = 'Cooking: ' + recipeName;
+                document.getElementById('cooking-modal').style.display = 'flex';
+                
+                // Simulate cooking progress
+                let progress = 0;
+                const progressBar = document.getElementById('cooking-progress');
+                const interval = setInterval(() => {
+                    progress += 5;
+                    progressBar.style.width = progress + '%';
+                    
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        showNotification(recipeName + ' is ready!');
+                    }
+                }, 500);
+                
+                // Store interval ID to clear it later
+                progressBar.dataset.interval = interval;
+            });
+        });
+        
+        // Pause cooking button
+        document.getElementById('pause-cooking').addEventListener('click', function() {
+            const progressBar = document.getElementById('cooking-progress');
+            const interval = progressBar.dataset.interval;
+            
+            if (this.textContent === 'Pause') {
+                clearInterval(interval);
+                this.textContent = 'Resume';
+                showNotification('Cooking paused');
+            } else {
+                let progress = parseInt(progressBar.style.width || '0');
+                const newInterval = setInterval(() => {
+                    progress += 5;
+                    progressBar.style.width = progress + '%';
+                    
+                    if (progress >= 100) {
+                        clearInterval(newInterval);
+                        showNotification('Cooking completed!');
+                    }
+                }, 500);
+                
+                progressBar.dataset.interval = newInterval;
+                this.textContent = 'Pause';
+                showNotification('Cooking resumed');
+            }
+        });
+        
+        // Stop cooking button
+        document.getElementById('stop-cooking').addEventListener('click', function() {
+            const progressBar = document.getElementById('cooking-progress');
+            clearInterval(progressBar.dataset.interval);
+            document.getElementById('cooking-modal').style.display = 'none';
+            progressBar.style.width = '0%';
+            document.getElementById('pause-cooking').textContent = 'Pause';
+            showNotification('Cooking stopped');
+        });
+        
+        // Notification function
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            document.getElementById('notification-text').textContent = message;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Simulate initial notification
+        setTimeout(() => {
+            showNotification('Welcome to SmartKitchen! Your appliances are connected.');
+        }, 1000);
+    </script>
+</body>
+</html>
